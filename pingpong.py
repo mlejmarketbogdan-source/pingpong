@@ -20,7 +20,27 @@ class Player():
         if self.hitbox.bottom < 0:
             self.hitbox,bottom = 0
 
+class Ball():
+    def __init__(self,x,y,speed):
+        self.hitbox = Rect(x,y,34,34)
+        self.speed = speed
+        self.speed_x = speed
+        self.speed_y = speed
+    def move(self):
+        self.hitbox.x += self.speed_x
+        self.hitbox.y += self.speed_y
+        if self.hitbox.top < 0:
+            self.speed_y = self.speed
+        if self.hitbox.bottom > 480:
+            self.speed_y = -self.speed
+        if self.hitbox.left < 0:
+            self.speed_x = self.speed
+        if self.hitbox.right > 720:
+            self.speed_x = -self.speed
+
+
 player1 = Player(50,240,5)
+ball = Ball(360,240,4)
 
 while True:
     win.fill((255,255,255))
@@ -30,5 +50,7 @@ while True:
             exit()
     player1.move()
     draw.rect(win,(255,0,0),player1.hitbox)
+    ball.move()
+    draw.rect(win,(255,0,0),ball.hitbox)
     display.update()
-    clock.tick(200)
+    clock.tick(400)
