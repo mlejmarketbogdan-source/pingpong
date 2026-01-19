@@ -19,6 +19,14 @@ class Player():
             self.hitbox,bottom = 480
         if self.hitbox.bottom < 0:
             self.hitbox,bottom = 0
+        if self.hitbox.colliderect(ball.hitbox):
+            ball.speed_x = ball.speed
+
+    def autopilot(self):
+        self.hitbox.y = ball.hitbox.y
+        if self.hitbox.colliderect(ball.hitbox):
+            ball.speed_x = -ball.speed
+
 
 class Ball():
     def __init__(self,x,y,speed):
@@ -40,6 +48,7 @@ class Ball():
 
 
 player1 = Player(50,240,5)
+player2 = Player(620,240,5)
 ball = Ball(360,240,4)
 
 while True:
@@ -50,7 +59,9 @@ while True:
             exit()
     player1.move()
     draw.rect(win,(255,0,0),player1.hitbox)
+    player2.autopilot()
+    draw.rect(win,(255,0,0),player2.hitbox)
     ball.move()
     draw.rect(win,(255,0,0),ball.hitbox)
     display.update()
-    clock.tick(400)
+    clock.tick(200)
