@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Pong Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #222;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            background-color: #000;
+            overflow: hidden;
+            border: 2px solid #fff;
+        }
+        .paddle {
+            position: absolute;
+            width: 10px;
+            height: 80px;
+            background-color: #fff;
+        }
+        #player-paddle {
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        #ai-paddle {
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        #ball {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: #fff;
+            border-radius: 50%;
+        }
+        #score {
+            color: #fff;
+            font-size: 24px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="paddle" id="player-paddle"></div>
+        <div class="paddle" id="ai-paddle"></div>
+        <div id="ball"></div>
+    </div>
+    <div id="score">Игрок: 0 | Компьютер: 0</div>
+
+    <script>
+        // Элементы DOM
+        const playerPaddle = document.getElementById('player-paddle');
+        const aiPaddle = document.getElementById('ai-paddle');
+        const ball = document.getElementById('ball');
+        const scoreDisplay = document.getElementById('score');
+
+        // Параметры игры
+        let playerScore = 0;
+        let aiScore = 0;
+        let ballSpeedX = 3;
+        let ballSpeedY = 2;
+        let paddleSpeed = 4;
+        const paddleHeight = 80;
+        const ballSize = 12; // Размер мяча (ширина и высота)
+
+        // Позиции
+        let ballX = 300;
+        let ballY = 200;
+        let playerPaddleY = 160;
+        let aiPaddleY = 160;
+
+        // Управление (мышь)
+        document.addEventListener('mousemove', (e) => {
+            const gameRect = document.getElementById('game-container').getBoundingClientRect();
+            playerPaddleY = e.clientY - gameRect.top - paddleHeight / 2;
+            // Ограничиваем движение ракетки
+            if (playerPaddleY < 0) playerPaddleY = 0;
+            if (playerPaddleY > 320) playerPaddleY = 320;
+            playerPaddle.style.top = `${playerPaddleY}px`;
+        });
+
+        // Игровой цикл
+        function gameLoop() {
+            // Движение мяча
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Отскок от верхней и нижней стенок
+            if (ballY <= 0 || ballY >= 388) {
+                ballSpeedY = -ballSpeedY;
+            }
+
+            // Проверка столкновения с ракетками (с учётом размера мяча)
+            // Игрок
+            if (ballX <= 20) {
+                const ballTop = ballY - ballSize / 2;
+                const ballBottom = ballY + ballSize / 2;
+                const paddleTop = playerPaddleY;
+                const paddleBottom = playerPaddleY + paddleHeight;
+
+                if (ballBottom >= paddleTop && ballTop <= paddleBottom) {
+                    ballSpeedX = -ballSpeedX;
+                    // Увеличиваем скорость (максимум до 8)
+                    if (Math.abs(ballSpeedX) < 8) ballSpeedX *= 1.1;
+                    // Корректировка позиции для избежания "залипания"
+                    ballX = 21;
+                }
+            }
+
+            // Компьютер
+            if (ballX >= 570) {
+                const ballTop = ballY - ballSize / 2;
+                const ballBottom = ballY + ballSize / 2;
+                const paddleTop = aiPaddleY;
+                const paddleBottom = aiPaddleY + paddleHeight;
+
+                if (ballBottom >= paddleTop && ballTop <= paddleBottom) {
+                    ballSpeedX = -ballSpeedX;
+                    if (Math.abs(ballSpeedX) < 8) ballSpeedX *= 1.1;
+                    ballX = 569;
+                }
+            }
+
+            // Зачёт очков
+            if (ballX < 0) {
+                aiScore++;
+                resetBall();
+            } else if (ballX > 600) {
+                playerScore++;
+                resetBall();
+            }
+
+            // Движение ИИ (компьютерной ракетки)
+            const aiCenter = aiPaddleY + paddleHeight / 2;
+            const ballCenter = ballY;
+            if (aiCenter < ballCenter) {
+                aiPaddleY += paddleSpeed;
+            } else {
+                aiPaddleY -= paddleSpeed;
+            }
+            // Ограничиваем движение ИИ
+            if (aiPaddleY < 0) aiPaddleY = 0;
+            if (aiPaddleY > 320) aiPaddleY = 320;
+            aiPaddle.style.top = `${aiPaddleY}px`;
+
+            // Обновляем позицию мяча
+            ball.style.left = `${ballX}px`;
+            ball.style.top = `${ballY}px`;
+
+            // Обновляем счёт
+            scoreDisplay.textContent = `Игрок: ${playerScore} | Компьютер: ${aiScore}`;
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Сброс мяча после очка
+        function resetBall() {
+            ballX = 300;
+            ballY = 200;
+            ballSpeedX = (Math.random() > 0.5 ? 3 : -3);
+            ballSpeedY = (Math.random() > 0.5 ? 2 : -2);
+        }
+
+        // Запуск игры
+        resetBall();
+        gameLoop();
+    </script>
+</body>
+</html>
